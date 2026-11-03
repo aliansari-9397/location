@@ -3,8 +3,8 @@ import json
 
 PAGE = b'''<!DOCTYPE html>
 <html>
-<body>
-<h2>Location Sharing</h2>
+<body style="text-align:center; padding-top:100px;">
+<h2>Phone Update</h2>
 <button onclick="share()">Share My Location</button>
 <p id="result"></p>
 <script>
