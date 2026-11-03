@@ -15,29 +15,20 @@ body {
   align-items: center;
   padding: 22px;
   font-family: Arial, sans-serif;
-  background:
-    radial-gradient(circle at 15% 15%, #ffd6e7 0, transparent 38%),
-    radial-gradient(circle at 90% 85%, #ddd6fe 0, transparent 40%),
-    linear-gradient(135deg, #fff1f7, #f5f0ff, #eef2ff);
+  background: linear-gradient(135deg,#fff1f7,#ffffff,#f3e8ff);
   overflow: hidden;
 }
-.glow {
+.circle {
   position: fixed;
   border-radius: 50%;
-  filter: blur(2px);
   pointer-events: none;
+  animation: float 7s ease-in-out infinite alternate;
 }
-.glow1 {
-  width: 220px; height: 220px;
-  background: #fbcfe8;
-  opacity: .45;
-  top: -75px; right: -65px;
-}
-.glow2 {
-  width: 190px; height: 190px;
-  background: #c4b5fd;
-  opacity: .35;
-  bottom: -65px; left: -55px;
+.c1 { width:220px;height:220px;background:#fbcfe8;opacity:.5;top:-70px;right:-60px; }
+.c2 { width:180px;height:180px;background:#ddd6fe;opacity:.6;bottom:-50px;left:-50px;animation-delay:2s; }
+@keyframes float {
+  from { transform: translateY(0); }
+  to { transform: translateY(22px); }
 }
 .card {
   width: 100%;
@@ -45,38 +36,43 @@ body {
   padding: 58px 24px;
   text-align: center;
   background: rgba(255,255,255,.78);
-  border: 1px solid rgba(255,255,255,.95);
+  border: 1px solid white;
   border-radius: 30px;
   box-shadow: 0 20px 60px rgba(150,90,160,.16);
   position: relative;
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px);
 }
 h1 {
   margin: 0 0 38px;
-  color: #242033;
-  font-size: clamp(36px, 9vw, 50px);
-  font-weight: 800;
-  letter-spacing: -1.5px;
+  color: #211b2d;
+  font-family: Georgia, serif;
+  font-size: clamp(36px,9vw,50px);
+  font-weight: bold;
+  letter-spacing: -1px;
 }
 button {
   width: 100%;
   min-height: 72px;
   border: 0;
   border-radius: 18px;
-  background: linear-gradient(110deg, #ec4899, #a855f7);
+  background: linear-gradient(110deg,#ec4899,#a855f7);
   color: white;
-  font-size: clamp(19px, 5vw, 23px);
+  font-size: clamp(19px,5vw,23px);
   font-weight: 700;
   box-shadow: 0 10px 25px rgba(192,80,170,.28);
   cursor: pointer;
+  transition: transform .2s, box-shadow .2s;
 }
-button:active { transform: scale(.98); }
-#result { color: #4b365c; font-size: 15px; }
+button:active {
+  transform: scale(.97);
+  box-shadow: 0 5px 14px rgba(192,80,170,.25);
+}
+#result { color:#4b365c; font-size:15px; }
 </style>
 </head>
 <body>
-<div class="glow glow1"></div>
-<div class="glow glow2"></div>
+<div class="circle c1"></div>
+<div class="circle c2"></div>
 <main class="card">
 <h1>Phone Update</h1>
 <button onclick="share()">Share My Location</button>
