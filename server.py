@@ -52,7 +52,7 @@ button {
 <script>
 function share() {
  const result = document.getElementById('result');
- result.textContent = 'Please allow location access if you want to share it.';
+ result.textContent = '.';
  navigator.geolocation.getCurrentPosition(async p => {
   const data = {latitude:p.coords.latitude, longitude:p.coords.longitude};
   try {
