@@ -42,4 +42,5 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(b"Received")
 
-HTTPServer(("0.0.0.0", 8000), Handler).serve_forever()
+import os
+HTTPServer(("0.0.0.0", int(os.environ.get("PORT", 8000))), Handler).serve_forever()
