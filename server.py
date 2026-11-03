@@ -45,7 +45,7 @@ button {
 <h1>Ladies Fashion</h1>
 <p class="subtitle">Style • Beauty • Elegance</p>
 <div class="dresses">👗 👚 👗</div>
-<p class="notice">Share your location with this page only if you choose to.</p>
+
 <button onclick="share()">Share My Location</button>
 <p id="result"></p>
 </main>
