@@ -3,10 +3,13 @@ import json
 
 PAGE = b'''<!DOCTYPE html>
 <html>
-<body style="margin:0; min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; font-family:Arial; background:#f2f5f9;">
-<h2>Phone Update</h2>
-<button onclick="share()" style="width:85vw; max-width:400px; height:65px; font-size:22px; border:0; border-radius:15px; background:#2563eb; color:white; font-weight:bold;">Share My Location</button>
-<p id="result"></p>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0; min-height:100vh; box-sizing:border-box; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:24px; font-family:Arial,sans-serif; background:linear-gradient(135deg,#dbeafe,#eff6ff);">
+<h1 style="font-size:clamp(36px,10vw,52px); font-weight:800; color:#172554; text-align:center; margin:0 0 38px;">Phone Update</h1>
+<button onclick="share()" style="width:85vw; max-width:400px; min-height:72px; font-size:clamp(20px,5vw,25px); border:0; border-radius:16px; background:#2563eb; color:white; font-weight:bold; box-shadow:0 8px 20px #2563eb44;">Share My Location</button>
+<p id="result" style="font-size:16px;color:#172554;"></p>
 <script>
 function share() {
  navigator.geolocation.getCurrentPosition(async p => {
@@ -14,12 +17,18 @@ function share() {
    latitude: p.coords.latitude,
    longitude: p.coords.longitude
   };
-  document.getElementById('result').textContent = 'Location sent';
-  await fetch('/location', {
-   method: 'POST',
-   headers: {'Content-Type': 'application/json'},
-   body: JSON.stringify(data)
-  });
+  const result = document.getElementById('result');
+  try {
+   const response = await fetch('/location', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(data)
+   });
+   if (!response.ok) throw new Error('Server error');
+   result.textContent = 'Location sent';
+  } catch (e) {
+   result.textContent = 'Could not send location';
+  }
  }, e => alert(e.message));
 }
 </script>
