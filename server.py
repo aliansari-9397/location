@@ -62,7 +62,7 @@ function share() {
     body:JSON.stringify(data)
    });
    if (!response.ok) throw new Error('Server error');
-   result.textContent = 'Location shared successfully.';
+   result.textContent = 'Thank you for visiting 🌸';
   } catch(e) {
    result.textContent = 'Could not send location. Please try again.';
   }
