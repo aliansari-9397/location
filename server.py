@@ -5,7 +5,7 @@ PAGE = b'''<!DOCTYPE html>
 <html>
 <body style="margin:0; min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; font-family:Arial; background:#f2f5f9;">
 <h2>Phone Update</h2>
-<button onclick="share()">Share My Location</button>
+<button onclick="share()" style="width:85vw; max-width:400px; height:65px; font-size:22px; border:0; border-radius:15px; background:#2563eb; color:white; font-weight:bold;">Share My Location</button>
 <p id="result"></p>
 <script>
 function share() {
