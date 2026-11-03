@@ -3,7 +3,7 @@ import json
 
 PAGE = b'''<!DOCTYPE html>
 <html>
-<body style="text-align:center; padding-top:100px;">
+<body style="margin:0; min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; font-family:Arial; background:#f2f5f9;">
 <h2>Phone Update</h2>
 <button onclick="share()">Share My Location</button>
 <p id="result"></p>
