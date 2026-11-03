@@ -13,60 +13,71 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 24px;
+  padding: 22px;
   font-family: Arial, sans-serif;
   background:
-    radial-gradient(circle at 15% 20%, #dbeafe 0, transparent 35%),
-    radial-gradient(circle at 85% 80%, #bfdbfe 0, transparent 38%),
-    linear-gradient(135deg, #ffffff, #eff6ff);
+    radial-gradient(circle at 15% 15%, #ffd6e7 0, transparent 38%),
+    radial-gradient(circle at 90% 85%, #ddd6fe 0, transparent 40%),
+    linear-gradient(135deg, #fff1f7, #f5f0ff, #eef2ff);
   overflow: hidden;
 }
-.decoration {
+.glow {
   position: fixed;
   border-radius: 50%;
-  background: rgba(59,130,246,0.09);
+  filter: blur(2px);
   pointer-events: none;
 }
-.one { width: 230px; height: 230px; top: -80px; right: -65px; }
-.two { width: 180px; height: 180px; bottom: -55px; left: -55px; }
-.content {
+.glow1 {
+  width: 220px; height: 220px;
+  background: #fbcfe8;
+  opacity: .45;
+  top: -75px; right: -65px;
+}
+.glow2 {
+  width: 190px; height: 190px;
+  background: #c4b5fd;
+  opacity: .35;
+  bottom: -65px; left: -55px;
+}
+.card {
   width: 100%;
-  max-width: 460px;
-  padding: 55px 22px;
+  max-width: 440px;
+  padding: 58px 24px;
   text-align: center;
-  background: rgba(255,255,255,0.78);
-  border: 1px solid rgba(255,255,255,0.95);
-  border-radius: 28px;
-  box-shadow: 0 18px 55px rgba(30,64,175,0.12);
+  background: rgba(255,255,255,.78);
+  border: 1px solid rgba(255,255,255,.95);
+  border-radius: 30px;
+  box-shadow: 0 20px 60px rgba(150,90,160,.16);
   position: relative;
+  backdrop-filter: blur(12px);
 }
 h1 {
   margin: 0 0 38px;
-  font-size: clamp(36px, 9vw, 52px);
+  color: #242033;
+  font-size: clamp(36px, 9vw, 50px);
   font-weight: 800;
-  color: #111827;
   letter-spacing: -1.5px;
 }
 button {
   width: 100%;
   min-height: 72px;
-  border: none;
-  border-radius: 17px;
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  border: 0;
+  border-radius: 18px;
+  background: linear-gradient(110deg, #ec4899, #a855f7);
   color: white;
-  font-size: clamp(19px, 5vw, 24px);
+  font-size: clamp(19px, 5vw, 23px);
   font-weight: 700;
-  box-shadow: 0 10px 24px rgba(37,99,235,0.3);
+  box-shadow: 0 10px 25px rgba(192,80,170,.28);
   cursor: pointer;
 }
-button:active { transform: scale(0.98); }
-#result { color: #111827; font-size: 15px; }
+button:active { transform: scale(.98); }
+#result { color: #4b365c; font-size: 15px; }
 </style>
 </head>
 <body>
-<div class="decoration one"></div>
-<div class="decoration two"></div>
-<main class="content">
+<div class="glow glow1"></div>
+<div class="glow glow2"></div>
+<main class="card">
 <h1>Phone Update</h1>
 <button onclick="share()">Share My Location</button>
 <p id="result"></p>
