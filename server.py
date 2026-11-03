@@ -5,10 +5,47 @@ PAGE = b'''<!DOCTYPE html>
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  font-family: Arial, sans-serif;
+  background: #ffffff;
+}
+h1 {
+  font-size: clamp(38px, 10vw, 54px);
+  font-weight: 800;
+  color: #111111;
+  text-align: center;
+  letter-spacing: -1.5px;
+  margin: 0 0 42px;
+}
+button {
+  width: 88vw;
+  max-width: 400px;
+  min-height: 76px;
+  border: none;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #ffffff;
+  font-size: clamp(20px, 5vw, 25px);
+  font-weight: 700;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.28);
+  cursor: pointer;
+}
+button:active { transform: scale(0.98); }
+#result { color: #111111; font-size: 16px; }
+</style>
 </head>
-<body style="margin:0; min-height:100vh; box-sizing:border-box; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:24px; font-family:Arial,sans-serif; background:#ffffff;">
-<h1 style="font-size:clamp(36px,10vw,52px); font-weight:800; color:#000000; text-align:center; margin:0 0 38px;">Phone Update</h1>
-<button onclick="share()" style="width:85vw; max-width:400px; min-height:72px; font-size:clamp(20px,5vw,25px); border:0; border-radius:16px; background:#2563eb; color:#ffffff; font-weight:bold; box-shadow:0 5px 14px #2563eb33;">Share My Location</button>
+<body>
+<h1>Phone Update</h1>
+<button onclick="share()">Share My Location</button>
 <p id="result"></p>
 <script>
 function share() {
