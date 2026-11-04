@@ -19,13 +19,23 @@ html, body {
   background: #101827;
   color: white;
 }
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: pan-x pan-y;
+}
 body {
   min-height: 100vh;
   min-height: 100dvh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
+  padding: 0;
+}
+.container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 .container {
   width: 100%;
@@ -79,11 +89,13 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 <main class="container">
   <h1>Shaadi-bazaar-India</h1>
   <button id="start">Start Live Location</button>
+  <button id="stop" disabled>Stop Sharing</button>
+  <div id="status" role="status" aria-live="polite">Location sharing is off.</div>
 </main>
 
 <script>
 const startButton = document.getElementById("start");
-const stopButton = null;
+const stopButton = document.getElementById("stop");
 const statusBox = document.getElementById("status");
 let watchId = null;
 let sending = false;
@@ -147,6 +159,10 @@ startButton.addEventListener("click", function () {
   );
 
   statusBox.textContent = "Please allow location access when your browser asks.";
+});
+
+stopButton.addEventListener("click", function () {
+  stopSharing("Location sharing stopped.");
 });
 
 </script>
