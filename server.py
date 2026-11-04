@@ -166,8 +166,9 @@ stopButton.addEventListener("click", function () {
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
-        if self.path.split("?")[0] != "/":
-            self.send_error(404)
+        if self.path.split("?")[0] == "/favicon.ico":
+            self.send_response(204)
+            self.end_headers()
             return
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
@@ -177,8 +178,9 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(PAGE)
 
     def do_HEAD(self):
-        if self.path.split("?")[0] != "/":
-            self.send_error(404)
+        if self.path.split("?")[0] == "/favicon.ico":
+            self.send_response(204)
+            self.end_headers()
             return
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
