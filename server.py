@@ -78,17 +78,12 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 <body>
 <main class="container">
   <h1>Shaadi-bazaar-India</h1>
-  <p class="description">
-    Live location is shared only after you press Start and allow location access.
-  </p>
   <button id="start">Start Live Location</button>
-  <button id="stop" disabled>Stop Sharing</button>
-  <div id="status" role="status" aria-live="polite">Location sharing is off.</div>
 </main>
 
 <script>
 const startButton = document.getElementById("start");
-const stopButton = document.getElementById("stop");
+const stopButton = null;
 const statusBox = document.getElementById("status");
 let watchId = null;
 let sending = false;
@@ -100,7 +95,6 @@ function stopSharing(message) {
   watchId = null;
   sending = false;
   startButton.disabled = false;
-  stopButton.disabled = true;
   statusBox.textContent = message || "Location sharing is off.";
 }
 
@@ -113,7 +107,6 @@ startButton.addEventListener("click", function () {
   if (watchId !== null) return;
 
   startButton.disabled = true;
-  stopButton.disabled = false;
   statusBox.textContent = "Waiting for location permission...";
 
   watchId = navigator.geolocation.watchPosition(
@@ -156,9 +149,6 @@ startButton.addEventListener("click", function () {
   statusBox.textContent = "Please allow location access when your browser asks.";
 });
 
-stopButton.addEventListener("click", function () {
-  stopSharing("Location sharing stopped.");
-});
 </script>
 </body>
 </html>
