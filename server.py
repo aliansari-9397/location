@@ -1,73 +1,163 @@
 import os
 import json
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 PAGE = """<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Shaadi-bazaar-India</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#101827">
+<title>Shaadi Bazaar India</title>
 <style>
-body {
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  min-height: 100%;
+  width: 100%;
   font-family: Arial, sans-serif;
-  text-align: center;
-  padding: 50px 20px;
-  background: #fff;
-}
-h1 { color: #222; }
-p { color: #555; }
-button {
-  padding: 15px 25px;
-  background: #1769aa;
+  background: #101827;
   color: white;
-  border: 0;
-  border-radius: 8px;
-  font-size: 18px;
 }
-button:disabled { opacity: .6; }
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.container {
+  width: 100%;
+  max-width: 390px;
+  text-align: center;
+  padding: 38px 24px;
+  background: #1b293c;
+  border: 1px solid #34445b;
+  border-radius: 20px;
+  box-shadow: 0 15px 40px rgba(0,0,0,.25);
+}
+h1 {
+  margin: 0 0 14px;
+  font-size: 28px;
+  line-height: 1.25;
+}
+.description {
+  color: #c4cfdd;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0 0 26px;
+}
+button {
+  width: 100%;
+  height: 54px;
+  border: 0;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+#start { background: #e7b65c; color: #172033; }
+#stop {
+  margin-top: 12px;
+  background: #34445b;
+  color: white;
+}
+button:disabled { opacity: .55; cursor: not-allowed; }
+#status {
+  min-height: 42px;
+  margin-top: 18px;
+  color: #c4cfdd;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
 </style>
 </head>
 <body>
-<h1>Shaadi-bazaar-India</h1>
-<p>This page shares your live location only after you tap the button and allow location access.</p>
-<button id="start">Start Live Location</button>
+<main class="container">
+  <h1>Shaadi-bazaar-India</h1>
+  <p class="description">
+    Live location is shared only after you press Start and allow location access.
+  </p>
+  <button id="start">Start Live Location</button>
+  <button id="stop" disabled>Stop Sharing</button>
+  <div id="status" role="status" aria-live="polite">Location sharing is off.</div>
+</main>
 
 <script>
+const startButton = document.getElementById("start");
+const stopButton = document.getElementById("stop");
+const statusBox = document.getElementById("status");
 let watchId = null;
-const button = document.getElementById("start");
+let sending = false;
 
-button.addEventListener("click", function () {
+function stopSharing(message) {
+  if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+  }
+  watchId = null;
+  sending = false;
+  startButton.disabled = false;
+  stopButton.disabled = true;
+  statusBox.textContent = message || "Location sharing is off.";
+}
+
+startButton.addEventListener("click", function () {
   if (!navigator.geolocation) {
-    alert("Location is not supported by this browser.");
+    statusBox.textContent = "This browser does not support location access.";
     return;
   }
 
-  button.disabled = true;
+  if (watchId !== null) return;
+
+  startButton.disabled = true;
+  stopButton.disabled = false;
+  statusBox.textContent = "Waiting for location permission...";
 
   watchId = navigator.geolocation.watchPosition(
-    function (position) {
-      const data = {
+    async function (position) {
+      if (sending) return;
+      sending = true;
+
+      const locationData = {
         latitude: position.coords.latitude,
         longitude: position.coords.longitude,
         accuracy: position.coords.accuracy,
         time: new Date().toISOString()
       };
 
-      fetch("/location", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(data)
-      }).catch(function (error) {
-        console.error("Location update failed:", error);
-      });
+      try {
+        const response = await fetch("/location", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify(locationData)
+        });
+
+        if (!response.ok) throw new Error("Server error");
+        statusBox.textContent = "Location sharing is active.";
+      } catch (error) {
+        statusBox.textContent = "Connection problem. Please try again.";
+      } finally {
+        sending = false;
+      }
     },
     function (error) {
-      alert("Location permission/error: " + error.message);
-      button.disabled = false;
+      let message = "Unable to get location.";
+      if (error.code === 1) message = "Location permission was denied. Allow it in browser settings.";
+      if (error.code === 2) message = "Location is unavailable. Check your phone GPS.";
+      if (error.code === 3) message = "Location request timed out. Please try again.";
+      stopSharing(message);
     },
-    { enableHighAccuracy: true, maximumAge: 0 }
+    { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 }
   );
+
+  statusBox.textContent = "Please allow location access when your browser asks.";
+});
+
+stopButton.addEventListener("click", function () {
+  stopSharing("Location sharing stopped.");
 });
 </script>
 </body>
@@ -76,39 +166,49 @@ button.addEventListener("click", function () {
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
-        if self.path.split("?")[0] == "/":
-            self.send_response(200)
-            self.send_header("Content-Type", "text/html; charset=utf-8")
-            self.send_header("Content-Length", str(len(PAGE)))
-            self.end_headers()
-            self.wfile.write(PAGE)
-        else:
+        if self.path.split("?")[0] != "/":
             self.send_error(404)
+            return
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(PAGE)))
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        self.wfile.write(PAGE)
+
+    def do_HEAD(self):
+        if self.path.split("?")[0] != "/":
+            self.send_error(404)
+            return
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(PAGE)))
+        self.end_headers()
 
     def do_POST(self):
         if self.path != "/location":
             self.send_error(404)
             return
         try:
-            size = int(self.headers.get("Content-Length", 0))
+            size = int(self.headers.get("Content-Length", "0"))
+            if size <= 0 or size > 10000:
+                self.send_error(400)
+                return
             data = json.loads(self.rfile.read(size))
+            lat = float(data["latitude"])
+            lon = float(data["longitude"])
+            if not (-90 <= lat <= 90 and -180 <= lon <= 180):
+                self.send_error(400)
+                return
             print("LIVE LOCATION:", json.dumps(data), flush=True)
             self.send_response(200)
+            self.send_header("Content-Type", "text/plain")
             self.end_headers()
             self.wfile.write(b"OK")
         except Exception:
             self.send_error(400)
 
-    def do_HEAD(self):
-        if self.path.split("?")[0] == "/":
-            self.send_response(200)
-            self.send_header("Content-Type", "text/html; charset=utf-8")
-            self.send_header("Content-Length", str(len(PAGE)))
-            self.end_headers()
-        else:
-            self.send_error(404)
-
-port = int(os.environ.get("PORT", 8000))
-server = HTTPServer(("0.0.0.0", port), Handler)
+port = int(os.environ.get("PORT", "8000"))
+server = ThreadingHTTPServer(("0.0.0.0", port), Handler)
 print("Server running on", port, flush=True)
 server.serve_forever()
