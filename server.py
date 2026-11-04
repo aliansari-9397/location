@@ -27,12 +27,9 @@ button {
 </style>
 </head>
 <body>
-<div class="card">
-<h2>Live Location Sharing 🌸</h2>
-<p>Start sharing to send your live location while this page remains active.</p>
-<button onclick="start()">Start Live Location</button>
-<button id="stop" onclick="stop()" disabled>Stop Sharing</button>
-<p id="status">Location sharing is OFF.</p>
+
+
+
 </div>
 <script>
 let watchId = null;
