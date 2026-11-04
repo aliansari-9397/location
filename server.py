@@ -136,7 +136,6 @@ button.addEventListener("click", function () {
   button.disabled = true;
   navigator.geolocation.getCurrentPosition(function () {
     button.disabled = false;
-    button.textContent = "Stop Sharing";
     watchId = navigator.geolocation.watchPosition(async function (pos) {
       if (sending) return;
       sending = true;
