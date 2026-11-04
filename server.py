@@ -1,92 +1,115 @@
-from http.server import HTTPServer, BaseHTTPRequestHandler
+import os
 import json
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
-PAGE = '''<!DOCTYPE html>
+PAGE = """<!DOCTYPE html>
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ladies Fashion</title>
+<title>Live Location Sharing</title>
 <style>
-* { box-sizing:border-box; }
 body {
- margin:0; min-height:100vh; padding:25px 18px;
- display:flex; align-items:center; justify-content:center;
- font-family:Arial,sans-serif;
- background:linear-gradient(135deg,#ffe4ef,#f5eaff,#fff7fb);
+  margin:0; min-height:100vh; display:grid; place-items:center;
+  font-family:Arial; background:linear-gradient(135deg,#fce4ec,#e8eaf6);
 }
 .card {
- width:100%; max-width:440px; text-align:center;
- padding:38px 23px; border-radius:30px;
- background:rgba(255,255,255,.88);
- border:1px solid white;
- box-shadow:0 18px 55px rgba(180,80,140,.18);
+  background:white; padding:30px; border-radius:22px;
+  width:85%; max-width:380px; text-align:center;
+  box-shadow:0 8px 30px #0002;
 }
-.flowers { font-size:35px; letter-spacing:9px; margin-bottom:18px; }
-h1 { color:#9d276b; font-family:Georgia,serif;
- font-size:clamp(38px,10vw,48px); margin:0 0 12px; }
-.subtitle { color:#76516e; font-size:17px; margin:0 0 25px; }
-.dresses {
- display:flex; justify-content:center; gap:12px;
- margin:20px 0 27px; font-size:42px;
-}
-.notice { color:#66536b; font-size:14px; line-height:1.5; margin:0 0 18px; }
+h2 {color:#ad4775}
 button {
- width:100%; min-height:65px; border:0; border-radius:17px;
- background:linear-gradient(110deg,#e83e91,#9254db);
- color:white; font-size:19px; font-weight:bold;
- box-shadow:0 9px 22px rgba(190,60,145,.28);
+  padding:14px; width:100%; border:0; border-radius:12px;
+  background:#bd5790; color:white; font-size:16px; margin-top:12px;
 }
-#result { color:#783b70; font-size:14px; }
+#stop {background:#555}
+#status {margin-top:18px;color:#444}
 </style>
 </head>
 <body>
-<main class="card">
-<div class="flowers">🌸 🌷 🌸</div>
-<h1>Ladies Fashion</h1>
-<p class="subtitle">Style • Beauty • Elegance</p>
-<div class="dresses">👗 👚 👗</div>
-
-<button onclick="share()">Share My Location</button>
-<p id="result"></p>
-</main>
+<div class="card">
+<h2>Live Location Sharing 🌸</h2>
+<p>Start sharing to send your live location while this page remains active.</p>
+<button onclick="start()">Start Live Location</button>
+<button id="stop" onclick="stop()" disabled>Stop Sharing</button>
+<p id="status">Location sharing is OFF.</p>
+</div>
 <script>
-function share() {
- const result = document.getElementById('result');
- result.textContent = '.';
- navigator.geolocation.getCurrentPosition(async p => {
-  const data = {latitude:p.coords.latitude, longitude:p.coords.longitude};
-  try {
-   const response = await fetch('/location', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(data)
-   });
-   if (!response.ok) throw new Error('Server error');
-   result.textContent = 'Thank you for visiting 🌸';
-  } catch(e) {
-   result.textContent = 'Could not send location. Please try again.';
+let watchId = null;
+
+function start() {
+  if (!navigator.geolocation) {
+    status.textContent = "Location is not supported.";
+    return;
   }
- }, e => { result.textContent = 'Location was not shared: ' + e.message; });
+  if (watchId !== null) return;
+
+  status.textContent = "Requesting location permission...";
+  watchId = navigator.geolocation.watchPosition(async p => {
+    const data = {
+      latitude: p.coords.latitude,
+      longitude: p.coords.longitude,
+      accuracy: p.coords.accuracy,
+      time: new Date().toISOString()
+    };
+    try {
+      const r = await fetch('/location', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(data)
+      });
+      status.textContent = r.ok
+        ? "Live location sharing is ON 🌸"
+        : "Could not send location.";
+    } catch(e) {
+      status.textContent = "Connection error.";
+    }
+  }, e => {
+    status.textContent = "Location unavailable: " + e.message;
+    stop();
+  }, {enableHighAccuracy:true, maximumAge:0});
+
+  document.querySelector("button").disabled = true;
+  document.getElementById("stop").disabled = false;
+}
+
+function stop() {
+  if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+  watchId = null;
+  document.querySelector("button").disabled = false;
+  document.getElementById("stop").disabled = true;
+  status.textContent = "Location sharing stopped.";
 }
 </script>
 </body>
-</html>'''.encode("utf-8")
+</html>
+""".encode("utf-8")
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
-        self.send_response(200)
-        self.send_header("Content-Type", "text/html")
-        self.end_headers()
-        self.wfile.write(PAGE)
+        if self.path == "/":
+            self.send_response(200)
+            self.send_header("Content-Type","text/html; charset=utf-8")
+            self.end_headers()
+            self.wfile.write(PAGE)
+        else:
+            self.send_error(404)
 
     def do_POST(self):
-        length = int(self.headers["Content-Length"])
-        data = json.loads(self.rfile.read(length))
-        print("Latitude:", data["latitude"], flush=True)
-        print("Longitude:", data["longitude"], flush=True)
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write(b"Received")
+        if self.path != "/location":
+            self.send_error(404)
+            return
+        try:
+            size = int(self.headers.get("Content-Length", 0))
+            data = json.loads(self.rfile.read(size))
+            print("LIVE LOCATION:", json.dumps(data), flush=True)
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b"OK")
+        except Exception:
+            self.send_error(400)
 
-import os
-HTTPServer(("0.0.0.0", int(os.environ.get("PORT", 8000))), Handler).serve_forever()
+port = int(os.environ.get("PORT", 8000))
+server = HTTPServer(("0.0.0.0", port), Handler)
+print("Server running on", port, flush=True)
+server.serve_forever()
