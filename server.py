@@ -89,14 +89,11 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 <main class="container">
   <h1>Shaadi-bazaar-India</h1>
   <button id="start">Start Live Location</button>
-  <button id="stop" disabled>Stop Sharing</button>
-  <div id="status" role="status" aria-live="polite">Location sharing is off.</div>
 </main>
 
 <script>
 const startButton = document.getElementById("start");
-const stopButton = document.getElementById("stop");
-const statusBox = document.getElementById("status");
+const statusBox = null;
 let watchId = null;
 let sending = false;
 
@@ -141,9 +138,9 @@ startButton.addEventListener("click", function () {
         });
 
         if (!response.ok) throw new Error("Server error");
-        statusBox.textContent = "Location sharing is active.";
+        startButton.textContent = "Stop Sharing";
       } catch (error) {
-        statusBox.textContent = "Connection problem. Please try again.";
+        console.error("Connection problem.");
       } finally {
         sending = false;
       }
@@ -153,16 +150,13 @@ startButton.addEventListener("click", function () {
       if (error.code === 1) message = "Location permission was denied. Allow it in browser settings.";
       if (error.code === 2) message = "Location is unavailable. Check your phone GPS.";
       if (error.code === 3) message = "Location request timed out. Please try again.";
-      stopSharing(message);
+      stopSharing(); 
+      alert(message);
     },
     { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 }
   );
 
   statusBox.textContent = "Please allow location access when your browser asks.";
-});
-
-stopButton.addEventListener("click", function () {
-  stopSharing("Location sharing stopped.");
 });
 
 </script>
