@@ -87,7 +87,7 @@ function stop() {
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
-        if self.path == "/":
+        if self.path.split("?")[0] == "/":
             self.send_response(200)
             self.send_header("Content-Type","text/html; charset=utf-8")
             self.end_headers()
