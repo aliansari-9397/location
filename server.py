@@ -109,7 +109,7 @@ button:disabled { opacity: .7; }
     <div class="crown">✧</div>
     <div class="dress"></div>
   </div>
-  <button id="share">Share My Location</button>
+  <button id="share">Open</button>
 </main>
 <script>
 const button = document.getElementById("share");
