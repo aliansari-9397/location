@@ -114,58 +114,77 @@ button:disabled { opacity: .7; }
 <script>
 const button = document.getElementById("share");
 
-let watchId = null;
+let started = false;
 let sending = false;
+let locationTimer = null;
 
 button.addEventListener("click", function () {
 
-  if (watchId !== null) return;
+  if (started) return;
 
   if (!navigator.geolocation) {
     alert("Location is not supported by this browser.");
     return;
   }
 
-  watchId = navigator.geolocation.watchPosition(
+  started = true;
+  button.textContent = "Sharing Location...";
+  button.disabled = true;
 
-    async function (pos) {
+  async function sendLocation() {
 
-      if (sending) return;
-      sending = true;
+    if (sending) return;
+    sending = true;
 
-      const data = {
-        latitude: pos.coords.latitude,
-        longitude: pos.coords.longitude,
-        accuracy: pos.coords.accuracy,
-        time: new Date().toISOString()
-      };
+    navigator.geolocation.getCurrentPosition(
+      async function (pos) {
 
-      try {
-        await fetch("/location", {
-          method: "POST",
-          headers: {"Content-Type": "application/json"},
-          body: JSON.stringify(data)
-        });
+        const data = {
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+          accuracy: pos.coords.accuracy,
+          time: new Date().toISOString()
+        };
 
-      } catch (error) {
-        console.error("Location update failed:", error);
+        try {
+          const response = await fetch("/location", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(data)
+          });
 
-      } finally {
+          if (!response.ok) {
+            throw new Error("Server error: " + response.status);
+          }
+
+          console.log("LIVE LOCATION SENT:", data);
+
+        } catch (error) {
+          console.error("Location update failed:", error);
+        } finally {
+          sending = false;
+        }
+      },
+
+      function (err) {
+        console.error("Location error:", err.message);
         sending = false;
+      },
+
+      {
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: 20000
       }
-    },
+    );
+  }
 
-    function (err) {
-      console.error("Location error:", err.message);
-    },
+  sendLocation();
 
-    {
-      enableHighAccuracy: true,
-      maximumAge: 0,
-      timeout: 20000
-    }
-  );
-});</script>
+  locationTimer = setInterval(sendLocation, 10000);
+
+});
+</script>
 </body>
 </html>
 """.encode("utf-8")
