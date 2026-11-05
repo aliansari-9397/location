@@ -128,8 +128,6 @@ button.addEventListener("click", function () {
   }
 
   started = true;
-  button.textContent = "Sharing Location...";
-  button.disabled = true;
 
   async function sendLocation() {
 
