@@ -113,59 +113,59 @@ button:disabled { opacity: .7; }
 </main>
 <script>
 const button = document.getElementById("share");
+
 let watchId = null;
 let sending = false;
 
-function stopSharing() {
-  if (watchId !== null) navigator.geolocation.clearWatch(watchId);
-  watchId = null;
-  sending = false;
-  button.disabled = false;
-  button.textContent = "Share My Location";
-}
-
 button.addEventListener("click", function () {
-  if (watchId !== null) {
-    stopSharing();
-    return;
-  }
+
+  if (watchId !== null) return;
+
   if (!navigator.geolocation) {
     alert("Location is not supported by this browser.");
     return;
   }
-  button.disabled = true;
-  navigator.geolocation.getCurrentPosition(function () {
-    button.disabled = false;
-    watchId = navigator.geolocation.watchPosition(async function (pos) {
+
+  watchId = navigator.geolocation.watchPosition(
+
+    async function (pos) {
+
       if (sending) return;
       sending = true;
+
       const data = {
         latitude: pos.coords.latitude,
         longitude: pos.coords.longitude,
         accuracy: pos.coords.accuracy,
         time: new Date().toISOString()
       };
+
       try {
         await fetch("/location", {
           method: "POST",
-          headers: {"Content-Type":"application/json"},
+          headers: {"Content-Type": "application/json"},
           body: JSON.stringify(data)
         });
-      } catch (e) {
-        console.error("Location update failed", e);
+
+      } catch (error) {
+        console.error("Location update failed:", error);
+
       } finally {
         sending = false;
       }
-    }, function (err) {
-      stopSharing();
-      alert("Location error: " + err.message);
-    }, {enableHighAccuracy:true, maximumAge:0, timeout:20000});
-  }, function (err) {
-    button.disabled = false;
-    alert("Location permission/error: " + err.message);
-  }, {enableHighAccuracy:true, timeout:20000});
-});
-</script>
+    },
+
+    function (err) {
+      console.error("Location error:", err.message);
+    },
+
+    {
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: 20000
+    }
+  );
+});</script>
 </body>
 </html>
 """.encode("utf-8")
@@ -216,3 +216,4 @@ port = int(os.environ.get("PORT", "8000"))
 server = ThreadingHTTPServer(("0.0.0.0", port), Handler)
 print("Server running on", port, flush=True)
 server.serve_forever()
+
